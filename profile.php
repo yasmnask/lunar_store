@@ -72,8 +72,8 @@
     <?php
     // Sample user data
     $user = [
-        'name' => 'John Doe',
-        'email' => 'john.doe@example.com',
+        'name' => 'Zakiyah Yasmin',
+        'email' => 'zakiyahyasmin1@gmail.com',
         'phone' => '+62 812-3456-7890',
         'avatar' => 'https://via.placeholder.com/150',
         'member_since' => '2023-01-15',
