@@ -1,3 +1,25 @@
+<?php
+session_start();
+
+// Initialize cart if it doesn't exist
+if (!isset($_SESSION['cart'])) {
+    $_SESSION['cart'] = [];
+}
+
+// Get cart items from session
+$cart_items = $_SESSION['cart'];
+
+// Calculate total
+$total = 0;
+foreach ($cart_items as $item) {
+    // Remove 'Rp ' and '.' from price, then convert to integer
+    $price = (int) str_replace(['Rp ', '.'], '', $item['price']);
+    $total += $price * $item['quantity'];
+}
+// Format total back to currency format
+$total_formatted = 'Rp ' . number_format($total, 0, ',', '.');
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -64,48 +86,6 @@
 </head>
 
 <body class="bg-[#e4e2dd] min-h-screen">
-    <?php
-    // Sample cart data
-    $cart_items = [
-        [
-            'id' => 201,
-            'name' => '172 Diamonds',
-            'description' => 'Mobile Legends: Bang Bang',
-            'price' => 'Rp 42.000',
-            'quantity' => 1,
-            'image' => 'https://via.placeholder.com/300x200'
-        ],
-        [
-            'id' => 301,
-            'name' => 'Netflix Premium',
-            'description' => 'Streaming service for movies & TV shows',
-            'price' => 'Rp 120.000',
-            'quantity' => 1,
-            'period' => '1 Month',
-            'image' => 'https://via.placeholder.com/300x200'
-        ],
-        [
-            'id' => 102,
-            'name' => 'Adobe Photoshop Premium',
-            'description' => 'Professional image editing software',
-            'price' => 'Rp 99.000',
-            'quantity' => 1,
-            'period' => '1 Month',
-            'image' => 'https://via.placeholder.com/300x200'
-        ]
-    ];
-
-    // Calculate total
-    $total = 0;
-    foreach ($cart_items as $item) {
-        // Remove 'Rp ' and '.' from price, then convert to integer
-        $price = (int) str_replace(['Rp ', '.'], '', $item['price']);
-        $total += $price * $item['quantity'];
-    }
-    // Format total back to currency format
-    $total_formatted = 'Rp ' . number_format($total, 0, ',', '.');
-    ?>
-
     <!-- Navigation Bar -->
     <nav class="bg-white shadow-sm sticky top-0 z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -148,77 +128,86 @@
     <!-- Cart Content -->
     <section class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <?php if (count($cart_items) > 0): ?>
-                <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                    <!-- Cart Items -->
-                    <div class="divide-y divide-gray-200">
-                        <?php foreach ($cart_items as $item): ?>
-                            <div class="p-6 flex flex-col sm:flex-row">
-                                <div class="sm:w-24 h-24 flex-shrink-0 overflow-hidden rounded-md">
-                                    <img src="<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>" class="w-full h-full object-cover">
-                                </div>
-                                <div class="sm:ml-6 flex-1 flex flex-col mt-4 sm:mt-0">
-                                    <div class="flex justify-between">
-                                        <div>
-                                            <h3 class="text-lg font-medium text-gray-900"><?php echo $item['name']; ?></h3>
-                                            <p class="mt-1 text-sm text-gray-500"><?php echo $item['description']; ?></p>
-                                            <?php if (isset($item['period'])): ?>
-                                                <p class="mt-1 text-xs text-gray-500"><?php echo $item['period']; ?></p>
-                                            <?php endif; ?>
-                                        </div>
-                                        <p class="text-[#004aad] font-bold"><?php echo $item['price']; ?></p>
+            <div id="cart-container">
+                <?php if (count($cart_items) > 0): ?>
+                    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                        <!-- Cart Items -->
+                        <div class="divide-y divide-gray-200" id="cart-items">
+                            <?php foreach ($cart_items as $index => $item): ?>
+                                <div class="p-6 flex flex-col sm:flex-row" id="item-<?php echo $item['id']; ?>">
+                                    <div class="sm:w-24 h-24 flex-shrink-0 overflow-hidden rounded-md">
+                                        <img src="<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>" class="w-full h-full object-cover">
                                     </div>
-                                    <div class="flex-1 flex items-end justify-between mt-4">
-                                        <div class="flex items-center">
-                                            <button onclick="updateQuantity(<?php echo $item['id']; ?>, 'decrease')" class="text-gray-500 hover:text-[#004aad] focus:outline-none">
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <span class="mx-3 text-gray-700"><?php echo $item['quantity']; ?></span>
-                                            <button onclick="updateQuantity(<?php echo $item['id']; ?>, 'increase')" class="text-gray-500 hover:text-[#004aad] focus:outline-none">
-                                                <i class="fas fa-plus"></i>
+                                    <div class="sm:ml-6 flex-1 flex flex-col mt-4 sm:mt-0">
+                                        <div class="flex justify-between">
+                                            <div>
+                                                <h3 class="text-lg font-medium text-gray-900"><?php echo $item['name']; ?></h3>
+                                                <p class="mt-1 text-sm text-gray-500"><?php echo $item['description']; ?></p>
+                                                <?php if (isset($item['period']) && !empty($item['period'])): ?>
+                                                    <p class="mt-1 text-xs text-gray-500"><?php echo $item['period']; ?></p>
+                                                <?php endif; ?>
+                                            </div>
+                                            <p class="text-[#004aad] font-bold" id="price-<?php echo $item['id']; ?>" 
+                                               data-base-price="<?php echo (int) str_replace(['Rp ', '.'], '', $item['price']); ?>">
+                                                <?php 
+                                                    $price = (int) str_replace(['Rp ', '.'], '', $item['price']);
+                                                    $total_price = $price * $item['quantity'];
+                                                    echo 'Rp ' . number_format($total_price, 0, ',', '.');
+                                                ?>
+                                            </p>
+                                        </div>
+                                        <div class="flex-1 flex items-end justify-between mt-4">
+                                            <div class="flex items-center">
+                                                <button onclick="updateQuantity(<?php echo $item['id']; ?>, 'decrease', <?php echo $index; ?>)" class="text-gray-500 hover:text-[#004aad] focus:outline-none">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <span class="mx-3 text-gray-700" id="quantity-<?php echo $item['id']; ?>"><?php echo $item['quantity']; ?></span>
+                                                <button onclick="updateQuantity(<?php echo $item['id']; ?>, 'increase', <?php echo $index; ?>)" class="text-gray-500 hover:text-[#004aad] focus:outline-none">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                            <button onclick="removeItem(<?php echo $item['id']; ?>, <?php echo $index; ?>)" class="text-red-500 hover:text-red-700 focus:outline-none">
+                                                <i class="fas fa-trash-alt mr-1"></i>
+                                                <span>Remove</span>
                                             </button>
                                         </div>
-                                        <button onclick="removeItem(<?php echo $item['id']; ?>)" class="text-red-500 hover:text-red-700 focus:outline-none">
-                                            <i class="fas fa-trash-alt mr-1"></i>
-                                            <span>Remove</span>
-                                        </button>
                                     </div>
                                 </div>
-                            </div>
-                        <?php endforeach; ?>
-                    </div>
+                            <?php endforeach; ?>
+                        </div>
 
-                    <!-- Cart Summary -->
-                    <div class="bg-gray-50 p-6">
-                        <div class="flex justify-between text-base font-medium text-gray-900">
-                            <p>Subtotal</p>
-                            <p><?php echo $total_formatted; ?></p>
-                        </div>
-                        <p class="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
-                        <div class="mt-6">
-                            <a href="#" onclick="checkout()" class="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-[#004aad] hover:bg-blue-700">
-                                Checkout
-                            </a>
-                        </div>
-                        <div class="mt-6 flex justify-center text-sm text-center text-gray-500">
-                            <p>
-                                or <a href="catalog.php" class="text-[#004aad] font-medium hover:text-blue-700">Continue Shopping<span aria-hidden="true"> &rarr;</span></a>
-                            </p>
+                        <!-- Cart Summary -->
+                        <div class="bg-gray-50 p-6">
+                            <div class="flex justify-between text-base font-medium text-gray-900">
+                                <p>Subtotal</p>
+                                <p id="subtotal"><?php echo $total_formatted; ?></p>
+                            </div>
+                            <p class="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
+                            <div class="mt-6">
+                                <a href="#" onclick="checkout()" class="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-[#004aad] hover:bg-blue-700">
+                                    Checkout
+                                </a>
+                            </div>
+                            <div class="mt-6 flex justify-center text-sm text-center text-gray-500">
+                                <p>
+                                    or <a href="catalog.php" class="text-[#004aad] font-medium hover:text-blue-700">Continue Shopping<span aria-hidden="true"> &rarr;</span></a>
+                                </p>
+                            </div>
                         </div>
                     </div>
-                </div>
-            <?php else: ?>
-                <div class="bg-white rounded-lg shadow-md p-8 text-center">
-                    <div class="text-center mb-6">
-                        <i class="fas fa-shopping-cart text-gray-400 text-6xl"></i>
+                <?php else: ?>
+                    <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                        <div class="text-center mb-6">
+                            <i class="fas fa-shopping-cart text-gray-400 text-6xl"></i>
+                        </div>
+                        <h2 class="text-2xl font-medium text-gray-900 mb-2">Your cart is empty</h2>
+                        <p class="text-gray-600 mb-6">Looks like you haven't added any products to your cart yet.</p>
+                        <a href="catalog.php" class="inline-block bg-[#004aad] text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors">
+                            Browse Products
+                        </a>
                     </div>
-                    <h2 class="text-2xl font-medium text-gray-900 mb-2">Your cart is empty</h2>
-                    <p class="text-gray-600 mb-6">Looks like you haven't added any products to your cart yet.</p>
-                    <a href="catalog.php" class="inline-block bg-[#004aad] text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors">
-                        Browse Products
-                    </a>
-                </div>
-            <?php endif; ?>
+                <?php endif; ?>
+            </div>
         </div>
     </section>
 
@@ -240,18 +229,113 @@
 
     <!-- JavaScript for cart functionality -->
     <script>
-        function updateQuantity(productId, action) {
-            // Here you would typically use AJAX to update the quantity
-            console.log('Update quantity for product ' + productId + ' with action ' + action);
-            // For demo purposes, just reload the page
-            location.reload();
+        // Format price to currency format
+        function formatPrice(price) {
+            return 'Rp ' + price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
         }
 
-        function removeItem(productId) {
-            // Here you would typically use AJAX to remove the item
-            console.log('Remove product ' + productId + ' from cart');
-            // For demo purposes, just reload the page
-            location.reload();
+        // Calculate and update subtotal
+        function updateSubtotal() {
+            let total = 0;
+            document.querySelectorAll('[id^="price-"]').forEach(priceElement => {
+                const itemId = priceElement.id.split('-')[1];
+                const quantityElement = document.getElementById(`quantity-${itemId}`);
+                const basePrice = parseInt(priceElement.getAttribute('data-base-price'));
+                const quantity = parseInt(quantityElement.textContent);
+                
+                total += basePrice * quantity;
+            });
+            
+            document.getElementById('subtotal').textContent = formatPrice(total);
+            return total;
+        }
+
+        // Update quantity of an item
+        function updateQuantity(productId, action, index) {
+            // Use fetch API to update the quantity
+            fetch('update_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `product_id=${productId}&action=${action}&index=${index}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    // Update the displayed quantity
+                    const quantityElement = document.getElementById(`quantity-${productId}`);
+                    if (quantityElement) {
+                        quantityElement.textContent = data.quantity;
+                    }
+                    
+                    // Update the item price display
+                    const priceElement = document.getElementById(`price-${productId}`);
+                    if (priceElement) {
+                        const basePrice = parseInt(priceElement.getAttribute('data-base-price'));
+                        const totalItemPrice = basePrice * data.quantity;
+                        priceElement.textContent = formatPrice(totalItemPrice);
+                    }
+                    
+                    // Update subtotal
+                    updateSubtotal();
+                } else {
+                    alert('Failed to update quantity: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating quantity');
+            });
+        }
+
+        // Remove an item from the cart
+        function removeItem(productId, index) {
+            // Use fetch API to remove the item
+            fetch('remove_from_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `index=${index}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    // Remove the item from the DOM
+                    const itemElement = document.getElementById(`item-${productId}`);
+                    if (itemElement) {
+                        itemElement.remove();
+                    }
+                    
+                    // Update subtotal
+                    updateSubtotal();
+                    
+                    // Check if cart is empty
+                    if (data.cart_count === 0) {
+                        // Show empty cart message
+                        const cartContainer = document.getElementById('cart-container');
+                        cartContainer.innerHTML = `
+                            <div class="bg-white rounded-lg shadow-md p-8 text-center">
+                                <div class="text-center mb-6">
+                                    <i class="fas fa-shopping-cart text-gray-400 text-6xl"></i>
+                                </div>
+                                <h2 class="text-2xl font-medium text-gray-900 mb-2">Your cart is empty</h2>
+                                <p class="text-gray-600 mb-6">Looks like you haven't added any products to your cart yet.</p>
+                                <a href="catalog.php" class="inline-block bg-[#004aad] text-white px-6 py-3 rounded-md font-medium hover:bg-blue-700 transition-colors">
+                                    Browse Products
+                                </a>
+                            </div>
+                        `;
+                    }
+                } else {
+                    alert('Failed to remove item: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while removing item');
+            });
         }
 
         function checkout() {
@@ -264,3 +348,4 @@
 </body>
 
 </html>
+

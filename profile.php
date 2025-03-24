@@ -1,3 +1,39 @@
+<?php
+session_start();
+
+// Initialize user data in session if it doesn't exist
+if (!isset($_SESSION['user'])) {
+    // Default user data
+    $_SESSION['user'] = [
+        'name' => 'Zakiyah Yasmin',
+        'email' => 'zakiyahyasmin1@gmail.com',
+        'phone' => '+62 812-3456-7890',
+        'avatar' => 'https://via.placeholder.com/150',
+        'member_since' => '2023-01-15',
+        'total_orders' => 8,
+        'wallet_balance' => 'Rp 150.000',
+        'password' => 'password123' // In a real app, this would be hashed
+    ];
+}
+
+// Get user data from session
+$user = $_SESSION['user'];
+
+// Check if there's a success message
+$success_message = '';
+if (isset($_SESSION['profile_success'])) {
+    $success_message = $_SESSION['profile_success'];
+    unset($_SESSION['profile_success']); // Clear the message after displaying
+}
+
+// Check if there's an error message
+$error_message = '';
+if (isset($_SESSION['profile_error'])) {
+    $error_message = $_SESSION['profile_error'];
+    unset($_SESSION['profile_error']); // Clear the message after displaying
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -69,19 +105,6 @@
 </head>
 
 <body class="bg-[#e4e2dd] min-h-screen">
-    <?php
-    // Sample user data
-    $user = [
-        'name' => 'Zakiyah Yasmin',
-        'email' => 'zakiyahyasmin1@gmail.com',
-        'phone' => '+62 812-3456-7890',
-        'avatar' => 'https://via.placeholder.com/150',
-        'member_since' => '2023-01-15',
-        'total_orders' => 8,
-        'wallet_balance' => 'Rp 150.000'
-    ];
-    ?>
-
     <!-- Navigation Bar -->
     <nav class="bg-white shadow-sm sticky top-0 z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -124,6 +147,25 @@
     <!-- Profile Content -->
     <section class="py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Success/Error Messages -->
+            <?php if (!empty($success_message)): ?>
+                <div id="success-message" class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative">
+                    <span class="block sm:inline"><?php echo $success_message; ?></span>
+                    <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="document.getElementById('success-message').style.display = 'none';">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($error_message)): ?>
+                <div id="error-message" class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+                    <span class="block sm:inline"><?php echo $error_message; ?></span>
+                    <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="document.getElementById('error-message').style.display = 'none';">
+                        <i class="fas fa-times"></i>
+                    </span>
+                </div>
+            <?php endif; ?>
+
             <div class="bg-white rounded-lg shadow-md overflow-hidden">
                 <!-- Profile Header with Avatar -->
                 <div class="p-6 sm:p-8 bg-gray-50 border-b border-gray-200">
@@ -165,21 +207,21 @@
                 <div class="p-6 sm:p-8">
                     <!-- Personal Info Tab -->
                     <div id="personal-info" class="tab-content">
-                        <form>
+                        <form id="personal-info-form">
                             <div class="space-y-6">
                                 <div>
                                     <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
-                                    <input type="text" name="name" id="name" value="<?php echo $user['name']; ?>" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
+                                    <input type="text" name="name" id="name" value="<?php echo $user['name']; ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
                                 </div>
 
                                 <div>
                                     <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                                    <input type="email" name="email" id="email" value="<?php echo $user['email']; ?>" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
+                                    <input type="email" name="email" id="email" value="<?php echo $user['email']; ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
                                 </div>
 
                                 <div>
                                     <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-                                    <input type="tel" name="phone" id="phone" value="<?php echo $user['phone']; ?>" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
+                                    <input type="tel" name="phone" id="phone" value="<?php echo $user['phone']; ?>" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
                                 </div>
 
                                 <div>
@@ -195,7 +237,7 @@
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <button type="submit" class="bg-[#004aad] text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
+                                    <button type="button" onclick="updatePersonalInfo()" class="bg-[#004aad] text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
                                         Save Changes
                                     </button>
                                 </div>
@@ -205,25 +247,25 @@
 
                     <!-- Security Tab (Hidden by default) -->
                     <div id="security" class="tab-content hidden">
-                        <form>
+                        <form id="security-form">
                             <div class="space-y-6">
                                 <div>
                                     <label for="current-password" class="block text-sm font-medium text-gray-700">Current Password</label>
-                                    <input type="password" name="current-password" id="current-password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
+                                    <input type="password" name="current-password" id="current-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
                                 </div>
 
                                 <div>
                                     <label for="new-password" class="block text-sm font-medium text-gray-700">New Password</label>
-                                    <input type="password" name="new-password" id="new-password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
+                                    <input type="password" name="new-password" id="new-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
                                 </div>
 
                                 <div>
                                     <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                                    <input type="password" name="confirm-password" id="confirm-password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
+                                    <input type="password" name="confirm-password" id="confirm-password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#004aad] focus:border-[#004aad]">
                                 </div>
 
                                 <div class="flex justify-end">
-                                    <button type="submit" class="bg-[#004aad] text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
+                                    <button type="button" onclick="updatePassword()" class="bg-[#004aad] text-white px-4 py-2 rounded-md text-sm hover:bg-blue-700 transition-colors">
                                         Update Password
                                     </button>
                                 </div>
@@ -316,7 +358,118 @@
             event.currentTarget.classList.remove('text-gray-500');
             event.currentTarget.classList.remove('border-transparent');
         }
+
+        // Function to update personal info
+        function updatePersonalInfo() {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+
+            // Basic validation
+            if (!name || !email || !phone) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Use fetch API to update personal info
+            fetch('update_profile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=personal_info&name=${encodeURIComponent(name)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the profile header with new name
+                    document.querySelector('h2.text-2xl').textContent = name;
+                    
+                    // Show success message
+                    showMessage('success', data.message);
+                } else {
+                    showMessage('error', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error', 'An error occurred while updating your profile');
+            });
+        }
+
+        // Function to update password
+        function updatePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            // Basic validation
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                alert('Please fill in all password fields');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('New password and confirmation do not match');
+                return;
+            }
+
+            // Use fetch API to update password
+            fetch('update_profile.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `action=security&current_password=${encodeURIComponent(currentPassword)}&new_password=${encodeURIComponent(newPassword)}&confirm_password=${encodeURIComponent(confirmPassword)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear password fields
+                    document.getElementById('current-password').value = '';
+                    document.getElementById('new-password').value = '';
+                    document.getElementById('confirm-password').value = '';
+                    
+                    // Show success message
+                    showMessage('success', data.message);
+                } else {
+                    showMessage('error', data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error', 'An error occurred while updating your password');
+            });
+        }
+
+        // Function to show message
+        function showMessage(type, message) {
+            // Create message element
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type === 'success' 
+                ? 'mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative'
+                : 'mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative';
+            
+            messageDiv.innerHTML = `
+                <span class="block sm:inline">${message}</span>
+                <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove();">
+                    <i class="fas fa-times"></i>
+                </span>
+            `;
+            
+            // Insert at the top of the profile content
+            const profileContent = document.querySelector('.max-w-7xl.mx-auto.px-4.sm\\:px-6.lg\\:px-8');
+            profileContent.insertBefore(messageDiv, profileContent.firstChild);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 5000);
+        }
     </script>
 </body>
 
 </html>
+
