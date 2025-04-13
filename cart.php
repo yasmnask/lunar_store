@@ -132,68 +132,81 @@ $total_formatted = 'Rp ' . number_format($total, 0, ',', '.');
                 <?php if (count($cart_items) > 0): ?>
                     <div class="bg-white rounded-lg shadow-md overflow-hidden">
                         <!-- Cart Items -->
-                        <div class="divide-y divide-gray-200" id="cart-items">
-                            <?php foreach ($cart_items as $index => $item): ?>
-                                <div class="p-6 flex flex-col sm:flex-row" id="item-<?php echo $item['id']; ?>">
-                                    <div class="sm:w-24 h-24 flex-shrink-0 overflow-hidden rounded-md">
-                                        <img src="<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>" class="w-full h-full object-cover">
-                                    </div>
-                                    <div class="sm:ml-6 flex-1 flex flex-col mt-4 sm:mt-0">
-                                        <div class="flex justify-between">
-                                            <div>
-                                                <h3 class="text-lg font-medium text-gray-900"><?php echo $item['name']; ?></h3>
-                                                <p class="mt-1 text-sm text-gray-500"><?php echo $item['description']; ?></p>
-                                                <?php if (isset($item['period']) && !empty($item['period'])): ?>
-                                                    <p class="mt-1 text-xs text-gray-500"><?php echo $item['period']; ?></p>
-                                                <?php endif; ?>
-                                            </div>
-                                            <p class="text-[#004aad] font-bold" id="price-<?php echo $item['id']; ?>" 
-                                               data-base-price="<?php echo (int) str_replace(['Rp ', '.'], '', $item['price']); ?>">
-                                                <?php 
-                                                    $price = (int) str_replace(['Rp ', '.'], '', $item['price']);
-                                                    $total_price = $price * $item['quantity'];
-                                                    echo 'Rp ' . number_format($total_price, 0, ',', '.');
-                                                ?>
-                                            </p>
+                        <form action="checkout.php" method="POST" id="checkout-form">
+                            <input type="hidden" name="checkout_selected" value="1">
+                            <div class="divide-y divide-gray-200" id="cart-items">
+                                <?php foreach ($cart_items as $index => $item): ?>
+                                    <div class="p-6 flex flex-col sm:flex-row" id="item-<?php echo $item['id']; ?>">
+                                        <div class="flex items-center mr-4">
+                                            <input 
+                                                type="checkbox" 
+                                                id="select-<?php echo $item['id']; ?>" 
+                                                name="selected_items[]" 
+                                                value="<?php echo $index; ?>" 
+                                                checked
+                                                class="h-5 w-5 text-[#004aad] focus:ring-[#004aad] border-gray-300 rounded"
+                                            >
                                         </div>
-                                        <div class="flex-1 flex items-end justify-between mt-4">
-                                            <div class="flex items-center">
-                                                <button onclick="updateQuantity(<?php echo $item['id']; ?>, 'decrease', <?php echo $index; ?>)" class="text-gray-500 hover:text-[#004aad] focus:outline-none">
-                                                    <i class="fas fa-minus"></i>
-                                                </button>
-                                                <span class="mx-3 text-gray-700" id="quantity-<?php echo $item['id']; ?>"><?php echo $item['quantity']; ?></span>
-                                                <button onclick="updateQuantity(<?php echo $item['id']; ?>, 'increase', <?php echo $index; ?>)" class="text-gray-500 hover:text-[#004aad] focus:outline-none">
-                                                    <i class="fas fa-plus"></i>
+                                        <div class="sm:w-24 h-24 flex-shrink-0 overflow-hidden rounded-md">
+                                            <img src="<?php echo $item['image']; ?>" alt="<?php echo $item['name']; ?>" class="w-full h-full object-cover">
+                                        </div>
+                                        <div class="sm:ml-6 flex-1 flex flex-col mt-4 sm:mt-0">
+                                            <div class="flex justify-between">
+                                                <div>
+                                                    <h3 class="text-lg font-medium text-gray-900"><?php echo $item['name']; ?></h3>
+                                                    <p class="mt-1 text-sm text-gray-500"><?php echo $item['description']; ?></p>
+                                                    <?php if (isset($item['period']) && !empty($item['period'])): ?>
+                                                        <p class="mt-1 text-xs text-gray-500"><?php echo $item['period']; ?></p>
+                                                    <?php endif; ?>
+                                                </div>
+                                                <p class="text-[#004aad] font-bold" id="price-<?php echo $item['id']; ?>" 
+                                                data-base-price="<?php echo (int) str_replace(['Rp ', '.'], '', $item['price']); ?>">
+                                                    <?php 
+                                                        $price = (int) str_replace(['Rp ', '.'], '', $item['price']);
+                                                        $total_price = $price * $item['quantity'];
+                                                        echo 'Rp ' . number_format($total_price, 0, ',', '.');
+                                                    ?>
+                                                </p>
+                                            </div>
+                                            <div class="flex-1 flex items-end justify-between mt-4">
+                                                <div class="flex items-center">
+                                                    <button type="button" onclick="updateQuantity(<?php echo $item['id']; ?>, 'decrease', <?php echo $index; ?>)" class="text-gray-500 hover:text-[#004aad] focus:outline-none">
+                                                        <i class="fas fa-minus"></i>
+                                                    </button>
+                                                    <span class="mx-3 text-gray-700" id="quantity-<?php echo $item['id']; ?>"><?php echo $item['quantity']; ?></span>
+                                                    <button type="button" onclick="updateQuantity(<?php echo $item['id']; ?>, 'increase', <?php echo $index; ?>)" class="text-gray-500 hover:text-[#004aad] focus:outline-none">
+                                                        <i class="fas fa-plus"></i>
+                                                    </button>
+                                                </div>
+                                                <button type="button" onclick="removeItem(<?php echo $item['id']; ?>, <?php echo $index; ?>)" class="text-red-500 hover:text-red-700 focus:outline-none">
+                                                    <i class="fas fa-trash-alt mr-1"></i>
+                                                    <span>Remove</span>
                                                 </button>
                                             </div>
-                                            <button onclick="removeItem(<?php echo $item['id']; ?>, <?php echo $index; ?>)" class="text-red-500 hover:text-red-700 focus:outline-none">
-                                                <i class="fas fa-trash-alt mr-1"></i>
-                                                <span>Remove</span>
-                                            </button>
                                         </div>
                                     </div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
+                                <?php endforeach; ?>
+                            </div>
 
-                        <!-- Cart Summary -->
-                        <div class="bg-gray-50 p-6">
-                            <div class="flex justify-between text-base font-medium text-gray-900">
-                                <p>Subtotal</p>
-                                <p id="subtotal"><?php echo $total_formatted; ?></p>
+                            <!-- Cart Summary -->
+                            <div class="bg-gray-50 p-6">
+                                <div class="flex justify-between text-base font-medium text-gray-900">
+                                    <p>Subtotal</p>
+                                    <p id="subtotal"><?php echo $total_formatted; ?></p>
+                                </div>
+                                <p class="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
+                                <div class="mt-6">
+                                    <button type="submit" class="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-[#004aad] hover:bg-blue-700">
+                                        Checkout Selected Items
+                                    </button>
+                                </div>
+                                <div class="mt-6 flex justify-center text-sm text-center text-gray-500">
+                                    <p>
+                                        or <a href="catalog.php" class="text-[#004aad] font-medium hover:text-blue-700">Continue Shopping<span aria-hidden="true"> &rarr;</span></a>
+                                    </p>
+                                </div>
                             </div>
-                            <p class="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
-                            <div class="mt-6">
-                                <a href="#" onclick="checkout()" class="w-full flex justify-center items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-[#004aad] hover:bg-blue-700">
-                                    Checkout
-                                </a>
-                            </div>
-                            <div class="mt-6 flex justify-center text-sm text-center text-gray-500">
-                                <p>
-                                    or <a href="catalog.php" class="text-[#004aad] font-medium hover:text-blue-700">Continue Shopping<span aria-hidden="true"> &rarr;</span></a>
-                                </p>
-                            </div>
-                        </div>
+                        </form>
                     </div>
                 <?php else: ?>
                     <div class="bg-white rounded-lg shadow-md p-8 text-center">
@@ -337,15 +350,7 @@ $total_formatted = 'Rp ' . number_format($total, 0, ',', '.');
                 alert('An error occurred while removing item');
             });
         }
-
-        function checkout() {
-            // Here you would typically redirect to checkout page or process
-            alert('Proceeding to checkout!');
-            // Example redirect
-            // window.location.href = 'checkout.php';
-        }
     </script>
 </body>
 
 </html>
-
