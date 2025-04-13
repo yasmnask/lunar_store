@@ -2,7 +2,7 @@
 session_start();
 
 // Initialize user data in session if it doesn't exist
-if (!isset($_SESSION['user'])) {
+if (!$_SESSION['user'] && !isset($_SESSION['user'])) {
     // Default user data
     $_SESSION['user'] = [
         'name' => 'Zakiyah Yasmin',
@@ -472,4 +472,3 @@ if (isset($_SESSION['profile_error'])) {
 </body>
 
 </html>
-
