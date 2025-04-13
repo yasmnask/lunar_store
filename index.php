@@ -95,7 +95,7 @@
             'id' => 4,
             'name' => 'Education Apps',
             'slug' => 'education-apps',
-            'description' => 'Tools to boost your productivity',
+            'description' => 'Get all the tools to boost your productivity',
             'image' => 'poster_edu.png'
         ]
     ];
