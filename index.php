@@ -75,28 +75,28 @@
             'name' => 'Editing Apps',
             'slug' => 'editing-apps',
             'description' => 'Premium photo and video editing applications',
-            'image' => 'https://via.placeholder.com/300x200'
+            'image' => 'poster_edit.png'
         ],
         [
             'id' => 2,
             'name' => 'Mobile Legends',
             'slug' => 'mobile-legends',
             'description' => 'Top up diamonds for Mobile Legends',
-            'image' => 'https://via.placeholder.com/300x200'
+            'image' => 'poster_ml.png'
         ],
         [
             'id' => 3,
             'name' => 'Streaming Apps',
             'slug' => 'streaming-apps',
             'description' => 'Premium subscriptions for streaming services',
-            'image' => 'https://via.placeholder.com/300x200'
+            'image' => 'poster_streaming.png'
         ],
         [
             'id' => 4,
-            'name' => 'Productivity Apps',
-            'slug' => 'productivity-apps',
-            'description' => 'Tools to boost your productivity',
-            'image' => 'https://via.placeholder.com/300x200'
+            'name' => 'Education Apps',
+            'slug' => 'education-apps',
+            'description' => 'Get all the tools to boost your productivity',
+            'image' => 'poster_edu.png'
         ]
     ];
 
